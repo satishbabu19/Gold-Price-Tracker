@@ -129,18 +129,16 @@ $("adj").addEventListener("input",()=>{S.adj[S.city]=parseFloat($("adj").value)|
 render();
 setInterval(()=>{if(!S.last)return;const a=Math.round((Date.now()-S.last)/1000),n=Math.max(0,EVERY/1000-a);$("cd").textContent="Updated "+(a<60?a+"s":Math.floor(a/60)+"m "+(a%60)+"s")+" ago · next in "+n+"s"},1000);
 
-const V="Alpha Vantage MCP Server";let M=null;
+const KEY="FXMOVYJHGTUI33M4"; // free key: alphavantage.co/support/#api-key
 const EVERY=15*60*1000, AV="https://www.alphavantage.co/query?function=";
 try{const c=JSON.parse(localStorage.getItem("gold_last")||"null");if(c){S.spot=c.spot;S.fx=c.fx;S.ts=c.ts;S.last=c.last}}catch(e){}
 async function load(){
   const b=$("rf");b.disabled=true;
-  if(!M){try{M=await claude.use("mcp")}catch(e){}}
-  if(!M){status(false,"Live feed unavailable – showing reference rate");b.disabled=false;render();return}
-  try{await M.invalidate(V)}catch(e){}
+  if(KEY.startsWith("YOUR_")){status(false,"Add your API key – showing reference rate");b.disabled=false;render();return}
   try{
     const [a,f]=await Promise.all([
-      M.callTool(V,"GOLD_SILVER_SPOT",{symbol:"XAU"}).then(parse),
-      M.callTool(V,"CURRENCY_EXCHANGE_RATE",{from_currency:"USD",to_currency:"INR",datatype:"json"}).then(parse)]);
+      fetch(AV+"GOLD_SILVER_SPOT&symbol=XAU&apikey="+KEY).then(r=>r.json()),
+      fetch(AV+"CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=INR&apikey="+KEY).then(r=>r.json())]);
     const p=parseFloat(a.price),x=parseFloat(f["Realtime Currency Exchange Rate"]["5. Exchange Rate"]);
     if(!p||!x)throw new Error("bad data");
     const old=g24();if(isFinite(old))S.prev={24:old,22:old*22/24,18:old*18/24};
