@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gold Rate Calculator – India</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--line:#e6e8f0;--tx:#161a29;--mute:#6b7287;--acc:#b8860b;--accbg:#fff6dc;--ok:#12a36b;--bad:#e5484d;--sh:0 1px 2px #1a1f3a0a,0 8px 24px #1a1f3a0d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1118;--card:#171b25;--line:#262c3a;--tx:#eef1f8;--mute:#8d96ad;--acc:#f0b429;--accbg:#2a2312;--sh:none}}
+:root[data-theme="dark"]{--bg:#0e1118;--card:#171b25;--line:#262c3a;--tx:#eef1f8;--mute:#8d96ad;--acc:#f0b429;--accbg:#2a2312;--sh:none}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}.sub{color:var(--mute);font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--mute);background:var(--card);border:1px solid var(--line);padding:6px 12px;border-radius:99px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--bad)}.live .dot{background:var(--ok);box-shadow:0 0 0 4px #12a36b22}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--tx);padding:6px 14px;border-radius:99px;font:inherit;font-size:13px;cursor:pointer}.btn:hover{border-color:var(--acc)}.btn:disabled{opacity:.5;cursor:default}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--tx);padding:8px 16px;border-radius:99px;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--sh)}
+.k{color:var(--mute);font-size:13px;font-weight:600}
+.v{font-size:clamp(22px,4.6vw,32px);font-weight:700;letter-spacing:-.02em;margin-top:4px}
+.k3 .card:first-child{background:var(--accbg);border-color:transparent}.k3 .card:first-child .v{color:var(--acc)}
+.d{font-size:13px;margin-top:2px;min-height:18px}.up{color:var(--ok)}.dn{color:var(--bad)}
+.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:12px;margin-top:12px}
+h2{font-size:15px;margin:0 0 12px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 6px;font-weight:600}
+input,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;outline:none}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px #f0b42926}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:none;color:var(--mute);padding:8px;border-radius:9px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--card);color:var(--tx);font-weight:600;box-shadow:var(--sh)}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}
+.row span{color:var(--mute)}.tot{margin-top:12px;padding:16px;border-radius:14px;background:var(--accbg);display:flex;justify-content:space-between;align-items:baseline}
+.tot b{font-size:26px;color:var(--acc)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;padding:9px 6px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600}tr:last-child td{border:0}
+.wrapx{overflow-x:auto}
+.note{color:var(--mute);font-size:13px;margin-top:14px}
+@media(max-width:720px){.cols{grid-template-columns:1fr}.k3{gap:8px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Gold Rate Today</h1><div class="sub">Live-linked estimates for Indian cities · per gram</div></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="pill" id="status"><span class="dot"></span><span id="stxt">Connecting…</span></div><div class="pill" id="cd">Waiting for first update…</div><button class="btn" id="rf" type="button">↻ Refresh</button></div>
+</header>
+
+<div class="chips" id="chips"></div>
+
+<div class="k3">
+  <div class="card"><div class="k">24K · 99.9%</div><div class="v" id="r24">—</div><div class="d" id="d24"></div></div>
+  <div class="card"><div class="k">22K · 91.6%</div><div class="v" id="r22">—</div><div class="d" id="d22"></div></div>
+  <div class="card"><div class="k">18K · 75%</div><div class="v" id="r18">—</div><div class="d" id="d18"></div></div>
+</div>
+
+<div class="cols">
+  <div class="card">
+    <h2>Calculator</h2>
+    <div class="two">
+      <div><label>Purity</label><div class="seg" id="karat"><button data-k="24">24K</button><button data-k="22" class="on">22K</button><button data-k="18">18K</button></div></div>
+      <div><label>GST</label><div class="seg" id="gst"><button data-g="1" class="on">Incl. 3%</button><button data-g="0">Excl.</button></div></div>
+    </div>
+    <div class="two">
+      <div><label>Weight (grams)</label><input id="wt" type="number" inputmode="decimal" value="10" min="0"></div>
+      <div><label>Making charge (%)</label><input id="mk" type="number" inputmode="decimal" value="12" min="0"></div>
+    </div>
+    <div class="row" style="margin-top:12px"><span>Base value</span><b id="cB">—</b></div>
+    <div class="row"><span>Making charges</span><b id="cM">—</b></div>
+    <div class="row"><span>GST (3%)</span><b id="cG">—</b></div>
+    <div class="tot"><span>Total amount</span><b id="cT">—</b></div>
+  </div>
+
+  <div class="card">
+    <h2>How much gold can I buy?</h2>
+    <label>Amount (₹)</label><input id="amt" type="number" inputmode="decimal" value="100000" min="0">
+    <div class="row" style="margin-top:12px"><span>24K</span><b id="a24">—</b></div>
+    <div class="row"><span>22K</span><b id="a22">—</b></div>
+    <div class="row"><span>18K</span><b id="a18">—</b></div>
+    <p class="note" style="margin-top:10px">Raw gold value at today’s rate, before making charges and GST.</p>
+    <h2 style="margin-top:18px">Advanced</h2>
+    <div class="two">
+      <div><label>Loading over spot (%)</label><input id="load" type="number" inputmode="decimal" step="0.1" value="16.95"></div>
+      <div><label>City adjustment (%)</label><input id="adj" type="number" inputmode="decimal" step="0.1" value="0"></div>
+    </div>
+    <label>Manual spot (USD/oz) — if feed is offline</label><input id="manual" type="number" inputmode="decimal" placeholder="optional">
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h2>Price per gram · <span id="cn">Chennai</span></h2>
+  <div class="wrapx"><table><thead><tr><th>Grams</th><th>24K</th><th>22K</th><th>18K</th></tr></thead><tbody id="tb"></tbody></table></div>
+  <p class="note">Spot: <span id="spot">—</span> /oz · USD/INR <span id="fx">—</span> · <span id="ts">—</span>. Rates are indicative estimates (live spot × USD/INR ÷ 31.1035 g, plus a loading calibrated to GoodReturns’ Chennai 24K rate of ₹13,762/g on 14 Nov 2026) and exclude GST, TCS and other levies. City adjustments start at 0 because only Chennai was verified — tune them to your local board rate. Confirm the exact price with your jeweller. Refreshes every 60 s.</p>
+</div>
+</div>
+
+<script>
+const CITIES=["Chennai","Bengaluru","Kakinada","Hyderabad","Mumbai","Delhi","Kochi"];
+const S={spot:null,fx:null,ts:null,city:"Chennai",adj:{},k:22,g:1,prev:null};
+CITIES.forEach(c=>S.adj[c]=0);
+const $=id=>document.getElementById(id);
+const inr=n=>isFinite(n)?"₹"+Math.round(n).toLocaleString("en-IN"):"—";
+function parse(r){try{let p=r&&r.payload;if(p&&typeof p==="object")return p;if(typeof p==="string")return JSON.parse(p);return JSON.parse(r.content.find(c=>c.type==="text").text)}catch(e){return null}}
+const spot=()=>parseFloat($("manual").value)||S.spot;
+function g24(){const s=spot();if(!s||!S.fx)return NaN;return s*S.fx/31.1035*(1+(parseFloat($("load").value)||0)/100)*(1+(S.adj[S.city]||0)/100)}
+function delta(el,now,prev){if(prev==null||!isFinite(now)||Math.round(now)===Math.round(prev)){el.textContent="";return}const d=now-prev;el.className="d "+(d>0?"up":"dn");el.textContent=(d>0?"▲ +":"▼ −")+inr(Math.abs(d)).replace("₹","₹")+" since last refresh"}
+function render(){
+  const b=g24(),r={24:b,22:b*22/24,18:b*18/24};
+  $("chips").innerHTML=CITIES.map(c=>`<button class="chip ${c===S.city?"on":""}" data-c="${c}">${c}</button>`).join("");
+  $("cn").textContent=S.city;
+  [24,22,18].forEach(k=>{$("r"+k).textContent=inr(r[k]);$("a"+k).textContent=isFinite(r[k])?((parseFloat($("amt").value)||0)/r[k]).toFixed(3)+" g":"—";if(S.prev)delta($("d"+k),r[k],S.prev[k])});
+  $("tb").innerHTML=[1,8,10,100].map(w=>`<tr><td>${w} g</td><td>${inr(r[24]*w)}</td><td>${inr(r[22]*w)}</td><td>${inr(r[18]*w)}</td></tr>`).join("");
+  const wt=parseFloat($("wt").value)||0,mk=parseFloat($("mk").value)||0;
+  const base=r[S.k]*wt,m=base*mk/100,gs=S.g?(base+m)*.03:0;
+  $("cB").textContent=inr(base);$("cM").textContent=inr(m);$("cG").textContent=inr(gs);$("cT").textContent=inr(base+m+gs);
+  const s=spot();$("spot").textContent=s?"$"+s.toLocaleString("en-US",{maximumFractionDigits:2}):"—";
+  $("fx").textContent=S.fx?"₹"+S.fx.toFixed(2):"—";$("ts").textContent=S.ts?S.ts+" UTC":"no timestamp";
+}
+function status(ok,t){$("status").className="pill "+(ok?"live":"");$("stxt").textContent=t}
+$("chips").addEventListener("click",e=>{const c=e.target.dataset.c;if(!c)return;S.city=c;$("adj").value=S.adj[c];S.prev=null;["24","22","18"].forEach(k=>$("d"+k).textContent="");render()});
+$("adj").addEventListener("input",()=>{S.adj[S.city]=parseFloat($("adj").value)||0;render()});
+["karat","gst"].forEach(id=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...$(id).children].forEach(x=>x.classList.remove("on"));b.classList.add("on");if(id==="karat")S.k=+b.dataset.k;else S.g=+b.dataset.g;render()}));
+["wt","mk","amt","load","manual"].forEach(i=>$(i).addEventListener("input",render));
+render();
+setInterval(()=>{if(!S.last)return;const a=Math.round((Date.now()-S.last)/1000),n=Math.max(0,60-a);$("cd").textContent="Updated "+(a<60?a+"s":Math.floor(a/60)+"m "+(a%60)+"s")+" ago · next in "+n+"s"},1000);
+$("rf").addEventListener("click",async()=>{const b=$("rf");if(!window.M){status(false,"Live feed unavailable – enter spot manually");return}b.disabled=true;b.textContent="Refreshing…";try{await window.M.invalidate("Alpha Vantage MCP Server")}catch(e){}setTimeout(()=>{b.disabled=false;b.textContent="↻ Refresh"},2500)});
+(async()=>{
+  let mcp=null;try{mcp=await claude.use("mcp")}catch(e){}
+  window.M=mcp;
+  if(!mcp){status(false,"Live feed unavailable – enter spot manually");return}
+  const V="Alpha Vantage MCP Server";
+  mcp.watchTool(V,"GOLD_SILVER_SPOT",{symbol:"XAU"},ev=>{
+    if(ev.type==="error"){status(false,"Feed error: "+ev.error.code);return}
+    const d=parse(ev.result);if(d&&d.price){const b=g24();if(isFinite(b))S.prev={24:b,22:b*22/24,18:b*18/24};S.spot=parseFloat(d.price);S.ts=d.timestamp;S.last=Date.now();status(true,"Live · updates every minute");render()}
+  },{refetchInterval:60000,cache:{staleTime:30000}});
+  mcp.watchTool(V,"CURRENCY_EXCHANGE_RATE",{from_currency:"USD",to_currency:"INR",datatype:"json"},ev=>{
+    if(ev.type==="error")return;const d=parse(ev.result),r=d&&d["Realtime Currency Exchange Rate"];
+    if(r){S.fx=parseFloat(r["5. Exchange Rate"]);render()}
+  },{refetchInterval:60000,cache:{staleTime:30000}});
+})();
+</script>
+</body>
+</html>
