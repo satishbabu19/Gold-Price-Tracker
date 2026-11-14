@@ -39,6 +39,7 @@ input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px #f0b42926}
 .tot b{font-size:26px;color:var(--acc)}
 table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;padding:9px 6px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600}tr:last-child td{border:0}
 .wrapx{overflow-x:auto}
+.buy{color:var(--ok)!important}.wait{color:var(--acc)}
 .note{color:var(--mute);font-size:13px;margin-top:14px}
 @media(max-width:720px){.cols{grid-template-columns:1fr}.k3{gap:8px}.card{padding:14px}}
 </style>
@@ -56,6 +57,14 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;
   <div class="card"><div class="k">24K · 99.9%</div><div class="v" id="r24">—</div><div class="d" id="d24"></div></div>
   <div class="card"><div class="k">22K · 91.6%</div><div class="v" id="r22">—</div><div class="d" id="d22"></div></div>
   <div class="card"><div class="k">18K · 75%</div><div class="v" id="r18">—</div><div class="d" id="d18"></div></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;align-items:end">
+    <div><div class="k">Today’s buying decision</div><div class="v wait" id="dv">—</div><div class="sub" id="dr" style="margin-top:4px"></div></div>
+    <div><label style="margin-top:0">Your target price (₹/g, 22K) – optional</label><input id="tgt" type="number" inputmode="decimal" placeholder="e.g. 12000"></div>
+  </div>
+  <p class="note" style="margin-top:10px">A simple price-based guide, not financial advice. With a target set: BUY SMALL SELECTIVELY when today’s 22K rate is at or below it, otherwise WAIT. Without a target: BUY SMALL SELECTIVELY when today’s rate sits in the lowest third of the last 30 days this page has recorded (needs 5+ days of history), otherwise WAIT.</p>
 </div>
 
 <div class="cols">
@@ -120,12 +129,13 @@ function render(){
   $("cB").textContent=inr(base);$("cM").textContent=inr(m);$("cG").textContent=inr(gs);$("cT").textContent=inr(base+m+gs);
   const s=spot();$("spot").textContent=s?"$"+s.toLocaleString("en-US",{maximumFractionDigits:2}):"—";
   $("fx").textContent=S.fx?"₹"+S.fx.toFixed(2):"—";$("ts").textContent=S.ts?S.ts+" UTC":"no timestamp";
+  decide();
 }
 function status(ok,t){$("status").className="pill "+(ok?"live":"");$("stxt").textContent=t}
 $("chips").addEventListener("click",e=>{const c=e.target.dataset.c;if(!c)return;S.city=c;$("adj").value=S.adj[c];S.prev=null;["24","22","18"].forEach(k=>$("d"+k).textContent="");render()});
 $("adj").addEventListener("input",()=>{S.adj[S.city]=parseFloat($("adj").value)||0;render()});
 ["karat","gst"].forEach(id=>$(id).addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;[...$(id).children].forEach(x=>x.classList.remove("on"));b.classList.add("on");if(id==="karat")S.k=+b.dataset.k;else S.g=+b.dataset.g;render()}));
-["wt","mk","amt","load","manual"].forEach(i=>$(i).addEventListener("input",render));
+["wt","mk","amt","load","manual","tgt"].forEach(i=>$(i).addEventListener("input",render));
 render();
 setInterval(()=>{if(!S.last)return;const a=Math.round((Date.now()-S.last)/1000),n=Math.max(0,EVERY/1000-a);$("cd").textContent="Updated "+(a<60?a+"s":Math.floor(a/60)+"m "+(a%60)+"s")+" ago · next in "+n+"s"},1000);
 
@@ -144,12 +154,35 @@ async function load(){
     const old=g24();if(isFinite(old))S.prev={24:old,22:old*22/24,18:old*18/24};
     S.spot=p;S.fx=x;S.ts=a.timestamp;S.last=Date.now();
     try{localStorage.setItem("gold_last",JSON.stringify({spot:p,fx:x,ts:a.timestamp,last:S.last}))}catch(e){}
-    status(true,"Live · updates every 15 min");
+    rec();status(true,"Live · updates every 15 min");
   }catch(e){status(false,S.spot?"Feed unavailable – showing last known rate":"Feed unavailable – showing reference rate")}
   b.disabled=false;render();
 }
 $("rf").addEventListener("click",load);
 load();setInterval(load,EVERY);
+function hist(){try{return JSON.parse(localStorage.getItem("gold_hist")||"{}")}catch(e){return {}}}
+function rec(){
+  if(!S.spot||!S.fx)return;
+  const h=hist(),d=new Date().toISOString().slice(0,10);
+  h[d]=S.spot*S.fx/31.1035*(1+(parseFloat($("load").value)||0)/100);
+  const o={};Object.keys(h).sort().slice(-60).forEach(k=>o[k]=h[k]);
+  try{localStorage.setItem("gold_hist",JSON.stringify(o))}catch(e){}
+}
+function decide(){
+  const cur=g24()*22/24,t=parseFloat($("tgt").value)||0;let buy=false,why="";
+  if(t>0){buy=cur<=t;why="22K today "+inr(cur)+" vs your target "+inr(t)+" per gram."}
+  else{
+    const h=hist(),vals=Object.keys(h).sort().slice(-30).map(k=>h[k]),f=(1+(S.adj[S.city]||0)/100)*22/24;
+    const sp=spot(),raw=(sp&&S.fx)?sp*S.fx/31.1035*(1+(parseFloat($("load").value)||0)/100):NaN;
+    if(!isFinite(raw)||vals.length<5)why="Collecting price history ("+vals.length+"/5 days) – set a target price for an instant signal.";
+    else{const mn=Math.min(...vals),mx=Math.max(...vals),pos=mx>mn?(raw-mn)/(mx-mn):.5;buy=pos<=.35;
+      why="Today’s price is at "+Math.round(pos*100)+"% of its "+vals.length+"-day range ("+inr(mn*f)+" – "+inr(mx*f)+" per gram, 22K)."}
+  }
+  $("dv").textContent=buy?"BUY SMALL SELECTIVELY":"WAIT";$("dv").className="v "+(buy?"buy":"wait");$("dr").textContent=why;
+}
+try{$("tgt").value=localStorage.getItem("gold_target")||""}catch(e){}
+$("tgt").addEventListener("input",()=>{try{localStorage.setItem("gold_target",$("tgt").value)}catch(e){}});
+decide();
 </script>
 </body>
 </html>
